@@ -1,39 +1,51 @@
-## app.py
+# app.py
 
+# 1. Importaciones
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date, timedelta
-import os # <-- ¡Asegúrate de que esta línea esté presente al principio del archivo!
+import os
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
-# --- Configuración de la Aplicación Flask ---
+# 2. Configuración de la Aplicación Flask
 app = Flask(__name__)
-
-# Configura la base de datos. Usará la variable de entorno 'DATABASE_URL' si existe (en Render).
-# Si no existe (en tu entorno de desarrollo local), volverá a usar 'sqlite:///mk_nails.db'.
+# Usa la variable de entorno DATABASE_URL para Render, o SQLite para desarrollo local
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///mk_nails.db')
-
-# Deshabilita una advertencia de SQLAlchemy.
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Clave secreta para la seguridad de las sesiones de Flask. ¡MUY IMPORTANTE!
+# En producción, usa una cadena más compleja y generada de forma segura.
+app.config['SECRET_KEY'] = 'una_clave_secreta_muy_segura_y_larga_para_mk_nails_cambiar_en_produccion'
 
-# Se necesita una clave secreta para la seguridad de las sesiones de Flask.
-# ¡IMPORTANTE! En un proyecto real, usa una cadena más compleja y segura,
-# y preferiblemente también la obtendrías de una variable de entorno.
-app.config['SECRET_KEY'] = 'una_clave_secreta_muy_segura_y_larga_para_mk_nails'
 
-# Inicializa la extensión SQLAlchemy con la aplicación Flask.
+# 3. Inicialización de SQLAlchemy (db) y Flask-Login (login_manager)
+# db = SQLAlchemy(app) DEBE estar ANTES de los modelos que usan db.Model
 db = SQLAlchemy(app)
 
-# ... el resto de tu código para los modelos Cita e Ingreso, y las rutas ...
+login_manager = LoginManager()
+login_manager.init_app(app) # Inicializa Flask-Login con tu app
+login_manager.login_view = 'login' # La ruta a la que se redirigirá si no está logueado
 
-# Asegúrate de que esta sección esté presente para crear las tablas
-# tanto en SQLite (local) como en PostgreSQL (Render) si no existen.
-with app.app_context():
-    db.create_all()
 
-# ... el resto de tus rutas y la ejecución de la aplicación ...
+# 4. Definición de los Modelos de la Base de Datos
+# Modelo User para la autenticación
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False) # Almacenará la contraseña hasheada
 
-# --- Definición de los Modelos de la Base de Datos ---
+    def set_password(self, password):
+        # Hashea la contraseña antes de guardarla.
+        self.password_hash = generate_password_hash(password)
 
+    def check_password(self, password):
+        # Verifica una contraseña con el hash guardado.
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return f"<User {self.username}>"
+
+# Modelo Cita
 class Cita(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cliente = db.Column(db.String(100), nullable=False)
@@ -42,34 +54,102 @@ class Cita(db.Model):
     servicio = db.Column(db.String(100), nullable=True)
     monto = db.Column(db.Float, nullable=True)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
-    # Añadimos una columna para vincular Cita con Ingreso
-    # Puede ser nulo porque un ingreso manual no está vinculado a una cita
+    # Relación uno a uno con Ingreso, para vincular el monto de la cita a un registro de ingreso
     ingreso_id = db.Column(db.Integer, db.ForeignKey('ingreso.id'), nullable=True)
-    ingreso = db.relationship('Ingreso', backref='cita', uselist=False) # Relación uno a uno
+    ingreso = db.relationship('Ingreso', backref='cita_asociada', uselist=False)
 
     def __repr__(self):
         return f"<Cita {self.cliente} - {self.fecha} {self.hora}>"
 
+# Modelo Ingreso
 class Ingreso(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fecha = db.Column(db.Date, nullable=False, default=date.today)
     monto = db.Column(db.Float, nullable=False)
     descripcion = db.Column(db.String(200), nullable=True)
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
-    # `tipo` para distinguir si es un ingreso de cita o manual
-    tipo = db.Column(db.String(50), nullable=False, default='manual') # 'cita' o 'manual'
-
+    # 'tipo' para distinguir si es un ingreso de 'cita' o 'manual'
+    tipo = db.Column(db.String(50), nullable=False, default='manual')
 
     def __repr__(self):
         return f"<Ingreso {self.fecha} - ${self.monto:.2f}>"
 
-# --- Creación de la Base de Datos (Si no existe) ---
+
+# 5. Funciones de Carga de Usuario para Flask-Login
+@login_manager.user_loader
+def load_user(user_id):
+    """
+    Esta función es necesaria para Flask-Login.
+    Recupera un objeto User por su ID.
+    """
+    return User.query.get(int(user_id))
+
+# 6. Creación de la Base de Datos (Si no existe)
+# Este bloque se ejecuta cuando el script se corre directamente.
+# Crea las tablas en la base de datos si aún no existen.
 with app.app_context():
     db.create_all()
 
-# --- Rutas de la Aplicación (Funciones que manejan las solicitudes web) ---
+    # Opcional: Crear un usuario administrador inicial si no existe
+    # ¡ADVERTENCIA! Esto es solo para la primera vez o para desarrollo.
+    # EN PRODUCCIÓN, elimina esta sección o implementa un sistema más seguro para crear usuarios.
+    if not User.query.filter_by(username='admin').first():
+        admin_user = User(username='admin')
+        admin_user.set_password('admin123') # ¡CAMBIA ESTA CONTRASEÑA EN PRODUCCIÓN!
+        db.session.add(admin_user)
+        db.session.commit()
+        print("--- Usuario 'admin' creado con contraseña 'admin123'. ¡CAMBIA ESTO URGENTEMENTE EN PRODUCCIÓN! ---")
 
+
+# 7. Rutas de la Aplicación
+
+# Rutas de Autenticación
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash('El nombre de usuario ya existe. Por favor, elige otro.', 'error')
+        else:
+            new_user = User(username=username)
+            new_user.set_password(password)
+            db.session.add(new_user)
+            db.session.commit()
+            flash('¡Registro exitoso! Ya puedes iniciar sesión.', 'success')
+            return redirect(url_for('login'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated: # Si el usuario ya está logueado, redirige al índice
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.check_password(password):
+            login_user(user) # Inicia la sesión del usuario
+            flash('Inicio de sesión exitoso!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Nombre de usuario o contraseña incorrectos.', 'error')
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required # Solo permite cerrar sesión si ya estás logueado
+def logout():
+    logout_user() # Cierra la sesión del usuario
+    flash('Has cerrado sesión.', 'info')
+    return redirect(url_for('login')) # Redirige a la página de login
+
+# Ruta principal: Muestra el tablero con citas del día y del día siguiente, y contabilidad.
 @app.route('/')
+@login_required # Protege esta ruta, requiere inicio de sesión
 def index():
     today = date.today()
     tomorrow = today + timedelta(days=1)
@@ -96,7 +176,9 @@ def index():
                            today=today,
                            tomorrow=tomorrow)
 
+# Ruta para agendar una nueva cita
 @app.route('/agendar_cita', methods=['GET', 'POST'])
+@login_required # Protege esta ruta
 def agendar_cita():
     if request.method == 'POST':
         cliente = request.form['cliente']
@@ -113,7 +195,6 @@ def agendar_cita():
                 flash('No puedes agendar citas en el pasado.', 'error')
                 return redirect(url_for('agendar_cita'))
 
-            # Primero creamos el ingreso si hay monto
             ingreso_asociado = None
             if monto is not None:
                 # El tipo de ingreso es 'cita'
@@ -145,7 +226,9 @@ def agendar_cita():
                 db.session.rollback() # Revierte la transacción
     return render_template('agendar_cita.html')
 
+# Ruta para registrar un ingreso manual
 @app.route('/registrar_ingreso', methods=['GET', 'POST'])
+@login_required # Protege esta ruta
 def registrar_ingreso():
     today = date.today()
     if request.method == 'POST':
@@ -174,13 +257,17 @@ def registrar_ingreso():
     return render_template('registrar_ingreso.html', today=today)
 
 
+# Ruta para ver todas las citas (opcional, para gestión)
 @app.route('/ver_todas_citas')
+@login_required # Protege esta ruta
 def ver_todas_citas():
+    # Ordenar citas por fecha y luego por hora
     todas_citas = Cita.query.order_by(Cita.fecha.asc(), Cita.hora.asc()).all()
     return render_template('ver_todas_citas.html', todas_citas=todas_citas)
 
-# MODIFICACIÓN: Ruta para eliminar una cita (ahora también elimina el ingreso asociado)
+# Ruta para eliminar una cita (ahora también elimina el ingreso asociado)
 @app.route('/eliminar_cita/<int:cita_id>', methods=['POST'])
+@login_required # Protege esta ruta
 def eliminar_cita(cita_id):
     cita_a_eliminar = Cita.query.get_or_404(cita_id)
     try:
@@ -197,23 +284,23 @@ def eliminar_cita(cita_id):
     except Exception as e:
         db.session.rollback() # Si algo falla, revierte los cambios para evitar datos inconsistentes
         flash(f'Error al eliminar la cita y su ingreso asociado: {e}', 'error')
-    return redirect(request.referrer or url_for('index'))
+    return redirect(request.referrer or url_for('index')) # Regresa a la página anterior o al inicio
 
-# NUEVA RUTA: Ver todos los ingresos
+# Ruta para ver todos los ingresos
 @app.route('/ver_todos_ingresos')
+@login_required # Protege esta ruta
 def ver_todos_ingresos():
     # Ordenar ingresos por fecha descendente
     todos_ingresos = Ingreso.query.order_by(Ingreso.fecha.desc(), Ingreso.fecha_registro.desc()).all()
     return render_template('ver_todos_ingresos.html', todos_ingresos=todos_ingresos)
 
-# NUEVA RUTA: Eliminar un ingreso manual
+# Ruta para eliminar un ingreso (solo manuales directamente)
 @app.route('/eliminar_ingreso/<int:ingreso_id>', methods=['POST'])
+@login_required # Protege esta ruta
 def eliminar_ingreso(ingreso_id):
     ingreso_a_eliminar = Ingreso.query.get_or_404(ingreso_id)
     try:
         # IMPORTANTE: Asegurarse de que no estamos eliminando un ingreso que tiene una cita vinculada.
-        # Esto evita eliminar el ingreso de una cita sin eliminar la cita misma.
-        # Si un ingreso es de tipo 'cita', no permitimos eliminarlo directamente desde aquí.
         if ingreso_a_eliminar.tipo == 'cita':
             flash('No puedes eliminar un ingreso vinculado a una cita directamente. Elimina la cita para eliminar su ingreso asociado.', 'error')
             return redirect(request.referrer or url_for('ver_todos_ingresos'))
@@ -227,11 +314,12 @@ def eliminar_ingreso(ingreso_id):
     return redirect(request.referrer or url_for('ver_todos_ingresos'))
 
 
-# NUEVA RUTA: Editar un ingreso
+# Ruta para editar un ingreso
 @app.route('/editar_ingreso/<int:ingreso_id>', methods=['GET', 'POST'])
+@login_required # Protege esta ruta
 def editar_ingreso(ingreso_id):
     ingreso = Ingreso.query.get_or_404(ingreso_id)
-    today = date.today() # Para el campo de fecha si se necesita
+    today = date.today()
 
     if request.method == 'POST':
         fecha_str = request.form['fecha']
@@ -250,12 +338,6 @@ def editar_ingreso(ingreso_id):
             ingreso.monto = monto
             ingreso.descripcion = descripcion
 
-            # Si este ingreso estaba asociado a una cita, y el monto de la cita
-            # es el mismo que el del ingreso, actualizamos también el monto de la cita.
-            # Esto es un poco más complejo, pero si la relación es 1:1, podemos considerarlo.
-            # Para la simplicidad de este ejercicio, nos enfocaremos en actualizar el ingreso.
-            # Si se quiere, podríamos añadir una lógica para buscar la cita asociada por ingreso_id y actualizarla.
-
             db.session.commit()
             flash('Ingreso actualizado con éxito!', 'success')
             return redirect(url_for('ver_todos_ingresos'))
@@ -268,6 +350,10 @@ def editar_ingreso(ingreso_id):
     return render_template('editar_ingreso.html', ingreso=ingreso, today=today)
 
 
-# --- Ejecución de la Aplicación ---
+# 8. Ejecución de la Aplicación
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Esto iniciará el servidor de desarrollo de Flask.
+    # debug=True permite recargar automáticamente el servidor en cambios
+    # y muestra errores detallados en el navegador.
+    # host='0.0.0.0' permite acceder desde otros dispositivos en la misma red local.
+    app.run(debug=True, host='0.0.0.0')

@@ -1,0 +1,507 @@
+/* Importar fuentes de Google Fonts (añádelas si quieres que se vean así) */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Pacifico&display=swap');
+
+/* Estilos Globales y Base */
+body {
+    font-family: 'Montserrat', sans-serif; /* Fuente más moderna */
+    margin: 0;
+    padding: 0;
+    background-color: #f8f0f6; /* Un rosa muy claro para el fondo */
+    color: #333;
+}
+
+/* Estilos de la Barra de Navegación */
+.navbar {
+    background: linear-gradient(to right, #ff69b4, #ffc0cb); /* Degradado rosa */
+    padding: 1em 2em; /* Más padding horizontal */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap; /* Desactiva el envoltorio por defecto para controlar mejor */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+    position: relative; /* Para el botón de logout */
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+/* Título de la App (MK Nails by Maria Klaudia) */
+.navbar-brand-link {
+    color: white;
+    text-decoration: none;
+    font-family: 'Pacifico', cursive; /* Fuente cursiva y elegante */
+    font-size: 2.2em; /* Tamaño más grande */
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3); /* Sombra más fuerte */
+    transition: transform 0.3s ease;
+    white-space: nowrap; /* Evita que el título se rompa */
+}
+
+.navbar-brand-link:hover {
+    transform: scale(1.02); /* Pequeño efecto al pasar el mouse */
+    background-color: transparent; /* Asegura que no haya fondo */
+    color: #f0f0f0; /* Un pequeño cambio de color para el hover */
+}
+
+/* Enlaces de Navegación (Agendar Cita, etc.) */
+.navbar-center {
+    display: flex;
+    gap: 25px; /* Más espacio entre enlaces */
+    flex-grow: 1; /* Permite que los enlaces ocupen el espacio central */
+    justify-content: center; /* Centra los enlaces */
+    margin: 0 20px; /* Márgenes laterales */
+}
+
+.navbar-center a {
+    color: white;
+    text-decoration: none;
+    padding: 0.8em 1.2em; /* Más padding para botones */
+    border-radius: 25px; /* Bordes más redondeados */
+    background-color: rgba(255, 255, 255, 0.2); /* Fondo semitransparente */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 0.95em;
+    font-weight: 600; /* Ligeramente más grueso */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    white-space: nowrap; /* Evita que los enlaces se rompan */
+}
+
+.navbar-center a:hover {
+    background-color: rgba(255, 255, 255, 0.4); /* Más opaco al pasar el mouse */
+    transform: translateY(-2px); /* Efecto de "levantamiento" */
+}
+
+/* Saludo de Usuario y Botón de Cerrar Sesión */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    white-space: nowrap; /* Evita que el saludo o el botón se rompan */
+}
+
+.user-greeting {
+    color: white;
+    font-weight: bold;
+    font-size: 1em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Botón de Cerrar Sesión (Redondo, Pequeño, Bonito) */
+.logout-button {
+    background-color: #f72585 !important; /* Rosa brillante */
+    color: white !important;
+    padding: 10px !important; /* Padding uniforme para hacerlo circular */
+    border-radius: 50% !important; /* Redondo */
+    width: 45px; /* Ancho y alto fijos para el círculo */
+    height: 45px;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em !important; /* Tamaño de fuente más pequeño */
+    text-decoration: none !important;
+    white-space: nowrap;
+    overflow: hidden; /* Oculta el texto que se desborda */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.3); /* Sombra más pronunciada */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease, width 0.3s ease, height 0.3s ease !important; /* Añadidos width y height a la transición */
+    font-weight: bold;
+    position: relative; /* Para el texto hover */
+    text-indent: -9999px; /* Oculta el texto original "Cerrar Sesión" */
+}
+
+.logout-button::before {
+    content: "Salir"; /* Texto visible en el botón circular */
+    position: absolute;
+    text-indent: 0; /* Hace visible el contenido generado */
+}
+
+.logout-button:hover {
+    background-color: #e01d73 !important; /* Rosa más oscuro al pasar el mouse */
+    transform: translateY(-2px) scale(1.05); /* Efecto de levantamiento y pequeño crecimiento */
+    box-shadow: 0 6px 10px rgba(0,0,0,0.4);
+    /* Efecto moderno: expandir a forma de píldora y mostrar más texto al pasar el mouse */
+    width: 120px; /* Ancho al expandir (ajustado para "Cerrar Sesión") */
+    height: auto; /* Permite que el alto se ajuste al texto */
+    padding: 10px 15px !important; /* Nuevo padding para la forma de píldora */
+    border-radius: 25px !important; /* Forma de píldora */
+    text-indent: 0; /* Asegura que el texto original se muestre si hubiera */
+}
+
+.logout-button:hover::before {
+    content: "Cerrar Sesión"; /* Muestra el texto completo al pasar el mouse */
+    font-size: 0.9em; /* Ajusta el tamaño de fuente para el texto completo */
+}
+
+
+/* --- Contenedor principal y mensajes flash --- */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 12px; /* Bordes más redondeados */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15); /* Sombra más suave y extendida */
+    box-sizing: border-box;
+}
+
+.flash-messages {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5em; /* Más espacio debajo */
+}
+
+.flash-messages li {
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px; /* Bordes más redondeados */
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* Sombra suave */
+}
+
+.flash-messages .success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.flash-messages .error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.flash-messages .info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+h1, h2, h3 {
+    color: #ff69b4;
+    text-align: center;
+    margin-bottom: 25px; /* Más espacio debajo de los títulos */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.section {
+    margin-bottom: 25px; /* Más espacio entre secciones */
+    padding: 20px;
+    border: 1px solid #ffe6f2;
+    border-radius: 8px;
+    background-color: #ffffff; /* Fondo blanco explícito */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Sombra suave para secciones */
+}
+
+.section h2 {
+    margin-top: 0;
+    border-bottom: 2px solid #ff69b4;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 1.8em; /* Título de sección más grande */
+}
+
+.summary-boxes {
+    display: flex;
+    justify-content: space-around;
+    gap: 25px; /* Más espacio entre cajas */
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.summary-box {
+    background-color: #fff0f5;
+    border: 1px solid #ffc0cb;
+    border-radius: 10px; /* Bordes más redondeados */
+    padding: 20px;
+    text-align: center;
+    flex: 1;
+    min-width: 280px; /* Ancho mínimo ligeramente mayor */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* Sombra más definida */
+    transition: transform 0.2s ease;
+}
+.summary-box:hover {
+    transform: translateY(-5px); /* Efecto de levantamiento al pasar el mouse */
+}
+
+
+.summary-box h3 {
+    margin-top: 0;
+    color: #ff69b4;
+    text-align: center;
+    font-size: 1.3em;
+}
+
+.summary-box p {
+    font-size: 1.8em; /* Tamaño de fuente más grande para los montos */
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-radius: 8px; /* Bordes redondeados para la tabla */
+    overflow: hidden; /* Para que el borde redondeado se vea bien */
+}
+
+table, th, td {
+    border: 1px solid #e0e0e0; /* Borde más suave */
+}
+
+th, td {
+    padding: 10px; /* Más padding en celdas */
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: 600;
+}
+
+/* Estilos para formularios */
+form {
+    background-color: #fff;
+    padding: 25px; /* Más padding */
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    margin-top: 25px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #555;
+}
+
+form input[type="text"],
+form input[type="date"],
+form input[type="time"],
+form input[type="number"],
+form input[type="password"],
+form textarea {
+    width: calc(100% - 24px); /* Ajuste para padding y borde */
+    padding: 12px; /* Más padding */
+    margin-bottom: 20px; /* Más espacio abajo */
+    border: 1px solid #dcdcdc; /* Borde más suave */
+    border-radius: 6px; /* Bordes más redondeados */
+    box-sizing: border-box;
+    font-size: 1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+form input[type="text"]:focus,
+form input[type="date"]:focus,
+form input[type="time"]:focus,
+form input[type="number"]:focus,
+form input[type="password"]:focus,
+form textarea:focus {
+    border-color: #ff69b4; /* Borde rosa al enfocar */
+    box-shadow: 0 0 8px rgba(255, 105, 180, 0.2); /* Sombra suave al enfocar */
+    outline: none; /* Elimina el contorno predeterminado del navegador */
+}
+
+/* Estilos de botones generales (Agendar, Registrar, Guardar, etc.) */
+form button,
+.button-group a,
+.button-group button {
+    background-color: #ff69b4; /* Rosa principal */
+    color: white;
+    padding: 12px 20px; /* Más padding */
+    border: none;
+    border-radius: 25px; /* Bordes más redondeados (estilo "píldora") */
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Sombra para dar profundidad */
+    text-decoration: none; /* Asegura que los enlaces no tengan subrayado */
+    display: inline-block; /* Para aplicar padding y ancho a enlaces */
+    text-align: center; /* Centra el texto */
+    min-width: 160px; /* Ancho mínimo para legibilidad */
+}
+
+form button:hover,
+.button-group a:hover,
+.button-group button:hover {
+    background-color: #ff4d94; /* Rosa más oscuro al pasar el mouse */
+    transform: translateY(-3px); /* Efecto de levantamiento */
+    box-shadow: 0 6px 10px rgba(0,0,0,0.15); /* Sombra más grande */
+}
+
+.delete-button {
+    background-color: #dc3545; /* Rojo para eliminar */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.button-group {
+    margin-top: 25px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* MEDIA QUERIES para responsividad */
+
+/* Estilos para pantallas pequeñas (hasta 768px de ancho, que suele ser tablet vertical/teléfono) */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column; /* Apila los elementos principales: título, enlaces, acciones de usuario */
+        padding: 0.8em 1em;
+        align-items: center; /* Centra horizontalmente los elementos apilados */
+    }
+
+    .navbar-left, .navbar-center, .navbar-right {
+        width: 100%; /* Ocupa todo el ancho disponible */
+        text-align: center; /* Centra el contenido dentro de cada sección */
+        margin-bottom: 0.8em; /* Espacio entre las secciones apiladas */
+    }
+
+    .navbar-left {
+        margin-bottom: 1.2em; /* Más espacio debajo del título */
+    }
+
+    .navbar-right {
+        margin-top: 0.5em; /* Un poco de espacio antes del saludo/botón de salir */
+        margin-bottom: 0; /* No hay margen inferior para la última sección */
+    }
+
+    .navbar-brand-link {
+        font-size: 1.8em; /* Reduce el tamaño del título en móvil */
+        white-space: normal; /* Permite que el título se envuelva si es muy largo */
+    }
+
+    .navbar-center {
+        flex-direction: column; /* Apila los enlaces de navegación verticalmente */
+        gap: 8px; /* Menos espacio entre enlaces apilados */
+        margin: 0; /* Elimina márgenes laterales que podrían empujar */
+    }
+
+    .navbar-center a {
+        padding: 0.6em 0.8em; /* Padding más compacto para enlaces apilados */
+        font-size: 0.9em;
+        width: calc(100% - 1.6em); /* Ajusta ancho para que quepa bien con padding */
+        box-sizing: border-box; /* Incluye padding en el ancho */
+        border-radius: 8px; /* Bordes menos redondeados para los enlaces en móvil */
+        text-align: center; /* Asegura que el texto esté centrado */
+    }
+    .navbar-center a:hover {
+        transform: none; /* Elimina el efecto de levantamiento en móvil */
+    }
+
+
+    .user-greeting {
+        margin-bottom: 10px; /* Espacio entre el saludo y el botón de salir */
+        font-size: 0.9em;
+        width: 100%; /* Asegura que ocupe todo el ancho */
+        text-align: center;
+    }
+
+    /* Botón de Cerrar Sesión en móvil (mantiene su forma redonda y solo dice "Salir") */
+    .logout-button {
+        width: 50px; /* Tamaño del círculo fijo */
+        height: 50px;
+        font-size: 0.8em !important; /* Ajusta la fuente */
+        padding: 0 !important; /* Asegura que el padding no afecte el tamaño del círculo */
+        margin: 0 auto; /* Centra el botón horizontalmente si su contenedor es 100% ancho */
+        position: static; /* No posicionamiento absoluto en móvil */
+        transform: none !important; /* Elimina transformaciones */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Sombra más discreta */
+        border-radius: 50% !important; /* Mantiene la forma redonda */
+    }
+
+    /* El contenido del botón "Salir" en móvil */
+    .logout-button::before {
+        content: "Salir"; /* Siempre muestra "Salir" en móvil */
+        position: static; /* No absoluto */
+        text-indent: 0; /* Muestra el texto */
+        font-size: 0.9em; /* Ajusta el tamaño de la fuente para que quepa bien */
+    }
+
+    /* Efecto de hover del botón de salir en móvil */
+    .logout-button:hover {
+        background-color: #e01d73 !important; /* Cambia de color */
+        transform: translateY(-2px) !important; /* Pequeño levantamiento */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        width: 50px; /* Asegura que no se expanda en móvil */
+        height: 50px;
+        border-radius: 50% !important;
+    }
+
+    /* Contenido general y formularios */
+    .container {
+        width: 95%; /* Un poco más de margen en pantallas pequeñas */
+        padding: 15px;
+    }
+
+    .summary-boxes {
+        flex-direction: column; /* Apila las cajas de resumen */
+        gap: 15px;
+    }
+
+    .summary-box {
+        min-width: unset; /* Elimina el ancho mínimo */
+        width: 100%; /* Ocupa todo el ancho */
+    }
+
+    table {
+        font-size: 0.8em; /* Reduce la fuente de la tabla un poco más */
+    }
+
+    th, td {
+        padding: 6px; /* Menos padding en celdas de tabla */
+    }
+
+    form input[type="text"],
+    form input[type="date"],
+    form input[type="time"],
+    form input[type="number"],
+    form input[type="password"],
+    form textarea {
+        width: calc(100% - 20px); /* Ajusta ancho para que quepa bien con padding */
+    }
+
+    .button-group {
+        flex-direction: column; /* Apila los botones de grupo */
+        gap: 10px;
+    }
+
+    .button-group a, .button-group button {
+        width: 100%;
+        min-width: unset;
+        padding: 10px 15px; /* Menos padding */
+        border-radius: 8px; /* Bordes menos redondeados en móvil */
+    }
+}
+
+/* Media Query para pantallas muy pequeñas (ej. iPhone SE, ancho < 375px) */
+@media (max-width: 375px) {
+    .navbar-brand-link {
+        font-size: 1.5em; /* Título aún más pequeño */
+    }
+    .logout-button {
+        width: 40px; /* Botón de salir un poco más pequeño */
+        height: 40px;
+        font-size: 0.7em !important;
+    }
+    .logout-button::before {
+        font-size: 0.7em;
+    }
+    .container {
+        padding: 10px;
+    }
+    table {
+        font-size: 0.75em;
+    }
+}

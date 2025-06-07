@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Todas las Citas - MK Nails{% endblock %}
+
+{% block content %}
+    <h1>Todas las Citas Agendadas</h1>
+
+    {% if todas_citas %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th>Servicio</th>
+                    <th>Monto Estimado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cita in todas_citas %}
+                    <tr>
+                        <td>{{ cita.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ cita.hora }}</td>
+                        <td>{{ cita.cliente }}</td>
+                        <td>{{ cita.servicio if cita.servicio else 'No especificado' }}</td>
+                        <td>{{ "%.2f"|format(cita.monto) if cita.monto else 'N/A' }}</td>
+                        <td>
+                            <form action="{{ url_for('eliminar_cita', cita_id=cita.id) }}" method="post" style="display:inline;">
+                                <button type="submit" class="delete-button" onclick="return confirm('¿Estás seguro de que quieres eliminar esta cita?')">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay citas agendadas en la base de datos.</p>
+    {% endif %}
+
+    <div class="button-group">
+        <a href="{{ url_for('agendar_cita') }}">Agendar Nueva Cita</a>
+    </div>
+{% endblock %}

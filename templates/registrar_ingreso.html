@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Ingreso - MK Nails{% endblock %}
+
+{% block content %}
+    <h1>Registrar Ingreso Manual</h1>
+    <form method="POST" action="{{ url_for('registrar_ingreso') }}">
+        <label for="fecha">Fecha del Ingreso:</label>
+        <input type="date" id="fecha" name="fecha" value="{{ today.strftime('%Y-%m-%d') }}" required>
+
+        <label for="monto">Monto:</label>
+        <input type="number" id="monto" name="monto" step="0.01" min="0" required>
+
+        <label for="descripcion">Descripción (Opcional):</label>
+        <textarea id="descripcion" name="descripcion" rows="4"></textarea>
+
+        <button type="submit">Registrar Ingreso</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - MK Nails{% endblock %}
+
+{% block content %}
+    <h1>Tablero Principal</h1>
+
+    <div class="summary-boxes">
+        <div class="summary-box">
+            <h3>Ingresos del Día ({{ today.strftime('%d/%m/%Y') }})</h3>
+            <p>${{ "%.2f"|format(ingresos_hoy) }}</p>
+        </div>
+        <div class="summary-box">
+            <h3>Ingresos de la Semana</h3>
+            <p>${{ "%.2f"|format(ingresos_semana) }}</p>
+        </div>
+        <div class="summary-box">
+            <h3>Ingresos del Mes</h3>
+            <p>${{ "%.2f"|format(ingresos_mes) }}</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Citas para Hoy ({{ today.strftime('%d/%m/%Y') }})</h2>
+        {% if citas_hoy %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Monto Estimado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cita in citas_hoy %}
+                        <tr>
+                            <td>{{ cita.hora }}</td>
+                            <td>{{ cita.cliente }}</td>
+                            <td>{{ cita.servicio if cita.servicio else 'No especificado' }}</td>
+                            <td>{{ "%.2f"|format(cita.monto) if cita.monto else 'N/A' }}</td>
+                            <td>
+                                <form action="{{ url_for('eliminar_cita', cita_id=cita.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="delete-button" onclick="return confirm('¿Estás seguro de que quieres eliminar esta cita?')">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay citas agendadas para hoy.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>Citas para Mañana ({{ tomorrow.strftime('%d/%m/%Y') }})</h2>
+        {% if citas_manana %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Monto Estimado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cita in citas_manana %}
+                        <tr>
+                            <td>{{ cita.hora }}</td>
+                            <td>{{ cita.cliente }}</td>
+                            <td>{{ cita.servicio if cita.servicio else 'No especificado' }}</td>
+                            <td>{{ "%.2f"|format(cita.monto) if cita.monto else 'N/A' }}</td>
+                            <td>
+                                <form action="{{ url_for('eliminar_cita', cita_id=cita.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="delete-button" onclick="return confirm('¿Estás seguro de que quieres eliminar esta cita?')">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay citas agendadas para mañana.</p>
+        {% endif %}
+    </div>
+
+    <div class="button-group">
+        <a href="{{ url_for('agendar_cita') }}">Agendar Nueva Cita</a>
+        <a href="{{ url_for('registrar_ingreso') }}">Registrar Ingreso Manual</a>
+    </div>
+{% endblock %}

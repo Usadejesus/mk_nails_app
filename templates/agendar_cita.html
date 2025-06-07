@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Agendar Cita - MK Nails{% endblock %}
+
+{% block content %}
+    <h1>Agendar Nueva Cita</h1>
+    <form method="POST" action="{{ url_for('agendar_cita') }}">
+        <label for="cliente">Nombre del Cliente:</label>
+        <input type="text" id="cliente" name="cliente" required>
+
+        <label for="fecha">Fecha de la Cita:</label>
+        <input type="date" id="fecha" name="fecha" required>
+
+        <label for="hora">Hora de la Cita:</label>
+        <input type="time" id="hora" name="hora" required>
+
+        <label for="servicio">Servicio (Opcional):</label>
+        <input type="text" id="servicio" name="servicio">
+
+        <label for="monto">Monto Estimado (Opcional):</label>
+        <input type="number" id="monto" name="monto" step="0.01" min="0">
+
+        <button type="submit">Agendar Cita</button>
+    </form>
+{% endblock %}

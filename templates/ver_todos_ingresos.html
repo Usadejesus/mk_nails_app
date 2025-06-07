@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Todos los Ingresos - MK Nails{% endblock %}
+
+{% block content %}
+    <h1>Todos los Registros de Ingresos</h1>
+
+    {% if todos_ingresos %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Monto</th>
+                    <th>Descripción</th>
+                    <th>Tipo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ingreso in todos_ingresos %}
+                    <tr>
+                        <td>{{ ingreso.fecha.strftime('%d/%m/%Y') }}</td>
+                        <td>${{ "%.2f"|format(ingreso.monto) }}</td>
+                        <td>{{ ingreso.descripcion if ingreso.descripcion else 'Sin descripción' }}</td>
+                        <td>{{ ingreso.tipo.capitalize() }}</td>
+                        <td>
+                            {% if ingreso.tipo == 'manual' %}
+                                <a href="{{ url_for('editar_ingreso', ingreso_id=ingreso.id) }}" class="button">Editar</a>
+                                <form action="{{ url_for('eliminar_ingreso', ingreso_id=ingreso.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="delete-button" onclick="return confirm('¿Estás seguro de que quieres eliminar este ingreso?')">Eliminar</button>
+                                </form>
+                            {% else %}
+                                <span style="color: #666;">Gestionar desde Cita</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay ingresos registrados en la base de datos.</p>
+    {% endif %}
+
+    <div class="button-group">
+        <a href="{{ url_for('registrar_ingreso') }}">Registrar Nuevo Ingreso Manual</a>
+    </div>
+{% endblock %}

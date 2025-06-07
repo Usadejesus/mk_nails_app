@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Ingreso - MK Nails{% endblock %}
+
+{% block content %}
+    <h1>Editar Ingreso</h1>
+    <form method="POST" action="{{ url_for('editar_ingreso', ingreso_id=ingreso.id) }}">
+        <label for="fecha">Fecha del Ingreso:</label>
+        <input type="date" id="fecha" name="fecha" value="{{ ingreso.fecha.strftime('%Y-%m-%d') }}" required>
+
+        <label for="monto">Monto:</label>
+        <input type="number" id="monto" name="monto" step="0.01" min="0" value="{{ '%.2f'|format(ingreso.monto) }}" required>
+
+        <label for="descripcion">Descripción (Opcional):</label>
+        <textarea id="descripcion" name="descripcion" rows="4">{{ ingreso.descripcion if ingreso.descripcion }}</textarea>
+
+        <button type="submit">Guardar Cambios</button>
+        <a href="{{ url_for('ver_todos_ingresos') }}" class="button">Cancelar</a>
+    </form>
+{% endblock %}

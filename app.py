@@ -15,7 +15,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:/
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Clave secreta para la seguridad de las sesiones de Flask. ¡MUY IMPORTANTE!
 # En producción, usa una cadena más compleja y generada de forma segura.
-app.config['SECRET_KEY'] = 'una_clave_secreta_muy_segura_y_larga_para_mk_nails_cambiar_en_produccion'
+# Puedes obtenerla de una variable de entorno en producción:
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'una_clave_secreta_muy_segura_y_larga_para_mk_nails_cambiar_en_produccion')
 
 
 # 3. Inicialización de SQLAlchemy (db) y Flask-Login (login_manager)
@@ -31,8 +32,10 @@ login_manager.login_view = 'login' # La ruta a la que se redirigirá si no está
 # Modelo User para la autenticación
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False) # Almacenará la contraseña hasheada
+    # Aumentar longitud para username por si acaso
+    username = db.Column(db.String(120), unique=True, nullable=False)
+    # Aumentar longitud para password_hash (¡CRÍTICO para Werkzeug!)
+    password_hash = db.Column(db.String(256), nullable=False)
 
     def set_password(self, password):
         # Hashea la contraseña antes de guardarla.
@@ -106,6 +109,8 @@ with app.app_context():
 # Rutas de Autenticación
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # En una aplicación real, querrías más seguridad para permitir registros,
+    # como un código de invitación o solo permitir el registro por un admin.
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
